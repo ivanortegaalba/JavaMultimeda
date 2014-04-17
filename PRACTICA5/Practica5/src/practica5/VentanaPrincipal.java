@@ -4,10 +4,14 @@
  */
 package practica5;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.geom.Arc2D;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Ellipse2D;
@@ -42,6 +46,8 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        moverCB = new javax.swing.JCheckBox();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
@@ -57,43 +63,75 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             }
         });
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
+        moverCB.setText("Mover");
+        moverCB.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                moverCBStateChanged(evt);
+            }
+        });
+        getContentPane().add(moverCB, java.awt.BorderLayout.PAGE_END);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void formMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMousePressed
         vectorShape.add(lineaClick = new Line2D.Double(evt.getPoint(),evt.getPoint()));
+        if(seleccionar){
+            this.setPos(this.getShapeSelected(evt.getPoint()),evt.getPoint());
+        }
     }//GEN-LAST:event_formMousePressed
 
     private void formMouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseDragged
+        
         lineaClick.setLine(lineaClick.getP1(), evt.getPoint());
+        
         this.paint(this.getGraphics());
     }//GEN-LAST:event_formMouseDragged
 
     private void formMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseReleased
 
     }//GEN-LAST:event_formMouseReleased
+
+    private void moverCBStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_moverCBStateChanged
+        if(moverCB.isSelected()){
+            this.seleccionar = true;
+        }
+    }//GEN-LAST:event_moverCBStateChanged
     
     int lineasDibujadas=0;
     Line2D.Double lineaClick = new Line2D.Double();
     List<Shape> vectorShape = new ArrayList();
+    boolean seleccionar = false;
     
-    
-    
+    public boolean cerca(Line2D linea, Point punto){
+        return(linea.ptLineDist(punto)>2.0);
+    }
+    public Line2D getShapeSelected(Point punto){
+        for(int i = 0; i < this.vectorShape.size(); i++){
+                if(this.cerca((Line2D) this.vectorShape.get(i), (Point) punto)){
+                    return (Line2D) this.vectorShape.get(i);
+                }
+            }
+        return null;
+    }
+    public void setPos(Line2D linea, Point punto){
+        double dx = punto.getX() - linea.getX1();
+        double dy = punto.getY() - linea.getY1();
+        Point2D nuevoP = new Point2D.Double(linea.getX2()+dx,linea.getY2()+dy);
+        linea.setLine(punto, nuevoP);
+    }
     @Override
     public void paint(Graphics g){
         super.paint(g);
         Graphics2D g2d = (Graphics2D)g;
+        /*-------MODIFICACION DE SHAPE------*/
+        //Stroke
+        Stroke sk = new BasicStroke(10.0f);
+        g2d.setStroke(sk);
+        //Paint
+        Paint colorp = new Color(255,100,255);
+        g2d.setPaint(colorp);
+
         /*-------------PUNTOS-------------*/
         Point2D.Double p = new Point.Double(50,50);
         Point2D.Double q = new Point.Double(100,100);
@@ -137,6 +175,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             polyline.lineTo(x2Points[index], y2Points[index]);
         }
         polyline.closePath();
+        /*-------------Vector de lineas-------------*/
         if(p != null)
             g2d.draw(polyline);
         if(!vectorShape.isEmpty())
@@ -146,5 +185,6 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox moverCB;
     // End of variables declaration//GEN-END:variables
 }
